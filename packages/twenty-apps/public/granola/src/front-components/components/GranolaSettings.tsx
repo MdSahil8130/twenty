@@ -2,11 +2,7 @@ import 'twenty-ui/style.css';
 
 import styled from '@emotion/styled';
 import { useState } from 'react';
-import {
-  t,
-  useColorScheme,
-  useFrontComponentId,
-} from 'twenty-sdk/front-component';
+import { t, useColorScheme } from 'twenty-sdk/front-component';
 import { isDefined } from 'twenty-sdk/utils';
 import { THEME_DARK, THEME_LIGHT } from 'twenty-ui/theme';
 import {
@@ -59,7 +55,6 @@ const shouldSetUpLiveSync = (status: GranolaConnectionStatus) =>
 
 export const GranolaSettings = () => {
   const colorScheme = useColorScheme();
-  const frontComponentId = useFrontComponentId();
   const [state, setState] = useState<GranolaSettingsState>({ step: 'loading' });
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | undefined>();
@@ -120,7 +115,7 @@ export const GranolaSettings = () => {
     setConnectError(undefined);
 
     try {
-      await setGranolaApiKeyOrThrow({ frontComponentId, apiKey });
+      await setGranolaApiKeyOrThrow({ apiKey });
     } catch {
       setConnectError(t('Could not save the API key. Try again.'));
       setIsConnecting(false);
@@ -145,7 +140,7 @@ export const GranolaSettings = () => {
         routePath: GRANOLA_WEBHOOK_REMOVAL_ROUTE_PATH,
         body: {},
       });
-      await setGranolaApiKeyOrThrow({ frontComponentId, apiKey: '' });
+      await setGranolaApiKeyOrThrow({ apiKey: '' });
       setConnectError(undefined);
       setRegistrationError(undefined);
     } catch {
