@@ -32,6 +32,13 @@ export const ON_EVENT_SUBSCRIPTION = gql`
           diff
         }
       }
+      coreObjectEvents {
+        entity
+        operation
+        coreWorkflowId
+        coreWorkflowVersionId
+        revision
+      }
       queueJobEvents {
         jobId
         state
