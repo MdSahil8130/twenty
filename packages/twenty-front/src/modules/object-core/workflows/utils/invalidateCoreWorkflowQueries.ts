@@ -9,12 +9,18 @@ import {
 
 export const invalidateCoreWorkflowQueries = async (
   apolloCoreClient: ApolloClient,
+  {
+    shouldInvalidateWorkflowList = true,
+  }: { shouldInvalidateWorkflowList?: boolean } = {},
 ) => {
-  for (const fieldName of [
+  const fieldNames = [
     'coreWorkflow',
     'coreWorkflowVersion',
     'coreWorkflowVersions',
-  ]) {
+    ...(shouldInvalidateWorkflowList ? ['coreWorkflows'] : []),
+  ];
+
+  for (const fieldName of fieldNames) {
     apolloCoreClient.cache.evict({ id: 'ROOT_QUERY', fieldName });
   }
 
@@ -23,7 +29,7 @@ export const invalidateCoreWorkflowQueries = async (
       GetCoreWorkflowVersionsDocument,
       GetCoreWorkflowVersionDocument,
       GetCoreWorkflowDocument,
-      GetCoreWorkflowsDocument,
+      ...(shouldInvalidateWorkflowList ? [GetCoreWorkflowsDocument] : []),
     ],
     onQueryUpdated: (query) => query.options.fetchPolicy !== 'standby',
   });
