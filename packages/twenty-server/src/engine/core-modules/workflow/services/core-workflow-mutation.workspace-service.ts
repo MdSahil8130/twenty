@@ -18,7 +18,9 @@ import {
 import { WorkflowEntity } from 'src/engine/core-modules/workflow/entities/workflow.entity';
 import { CommandMenuItemService } from 'src/engine/metadata-modules/command-menu-item/command-menu-item.service';
 import { getWorkflowCommandMenuItemLabel } from 'src/modules/workflow/workflow-trigger/utils/get-workflow-command-menu-item-label.util';
+import { CoreWorkflowEventService } from 'src/engine/core-modules/workflow/services/core-workflow-event.service';
 import { CoreWorkflowIdResolutionService } from 'src/engine/core-modules/workflow/services/core-workflow-id-resolution.service';
+import { CoreObjectEventOperation } from 'src/engine/subscriptions/enums/core-object-event-operation.enum';
 import { CoreWorkflowListService } from 'src/engine/core-modules/workflow/services/core-workflow-list.service';
 import { CoreWorkflowVersionWriteService } from 'src/engine/core-modules/workflow/services/core-workflow-version-write.service';
 import { assertExactlyOneMirrorRowWasWritten } from 'src/engine/core-modules/workflow/utils/assert-exactly-one-mirror-row-was-written.util';
@@ -56,6 +58,7 @@ export class CoreWorkflowMutationWorkspaceService {
     private readonly workflowVersionCoreSyncService: WorkflowVersionCoreSyncService,
     private readonly workflowCommonWorkspaceService: WorkflowCommonWorkspaceService,
     private readonly coreWorkflowIdResolutionService: CoreWorkflowIdResolutionService,
+    private readonly coreWorkflowEventService: CoreWorkflowEventService,
     private readonly commandMenuItemService: CommandMenuItemService,
     private readonly coreWorkflowListService: CoreWorkflowListService,
     private readonly coreWorkflowVersionWriteService: CoreWorkflowVersionWriteService,
@@ -242,6 +245,14 @@ export class CoreWorkflowMutationWorkspaceService {
             [name, coreWorkflowId, workspaceId],
           );
 
+          this.coreWorkflowEventService.publishWorkflowEventsAfterCommit({
+            workspaceId,
+            transactionScope,
+            events: [
+              { operation: CoreObjectEventOperation.UPDATED, coreWorkflowId },
+            ],
+          });
+
           await transactionScope
             .getRepository<WorkflowWorkspaceEntity>('workflow', {
               shouldBypassPermissionChecks: true,
@@ -394,6 +405,16 @@ export class CoreWorkflowMutationWorkspaceService {
 
       throw error;
     }
+
+    this.coreWorkflowEventService.publishWorkflowEvents({
+      workspaceId,
+      events: [
+        {
+          operation: CoreObjectEventOperation.CREATED,
+          coreWorkflowId: coreWorkflow.id,
+        },
+      ],
+    });
 
     return {
       id: coreWorkflow.id,
@@ -551,9 +572,11 @@ export class CoreWorkflowMutationWorkspaceService {
       );
     }
 
+    const discardedCoreWorkflowId = coreVersion.coreWorkflowId;
+
     const siblingCount = await this.coreWorkflowVersionRepository.count(
       workspaceId,
-      { where: { coreWorkflowId: coreVersion.coreWorkflowId } },
+      { where: { coreWorkflowId: discardedCoreWorkflowId } },
     );
 
     if (siblingCount <= 1) {
@@ -573,6 +596,18 @@ export class CoreWorkflowMutationWorkspaceService {
             `DELETE FROM core."workflowVersion" WHERE "id" = $1 AND "workspaceId" = $2`,
             [coreVersion.id, workspaceId],
           );
+
+          this.coreWorkflowEventService.publishWorkflowEventsAfterCommit({
+            workspaceId,
+            transactionScope,
+            events: [
+              {
+                operation: CoreObjectEventOperation.DELETED,
+                coreWorkflowId: discardedCoreWorkflowId,
+                coreWorkflowVersionId: coreVersion.id,
+              },
+            ],
+          });
 
           const mirrorDeleteResult = await transactionScope
             .getRepository<WorkflowVersionWorkspaceEntity>('workflowVersion', {

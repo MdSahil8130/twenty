@@ -12,6 +12,7 @@ import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.ent
 import { ApplicationTranslationCatalogModule } from 'src/engine/metadata-modules/application-translation-catalog/application-translation-catalog.module';
 import { WorkspaceManyOrAllFlatEntityMapsCacheModule } from 'src/engine/metadata-modules/flat-entity/services/workspace-many-or-all-flat-entity-maps-cache.module';
 import { NavigationMenuItemModule } from 'src/engine/metadata-modules/navigation-menu-item/navigation-menu-item.module';
+import { PermissionsModule } from 'src/engine/metadata-modules/permissions/permissions.module';
 import { RecordShareModule } from 'src/engine/core-modules/record-share/record-share.module';
 import { EventStreamResolver } from 'src/engine/subscriptions/event-stream.resolver';
 import { EventStreamService } from 'src/engine/subscriptions/event-stream.service';
@@ -19,6 +20,7 @@ import { MetadataEventEmitter } from 'src/engine/subscriptions/metadata-event/me
 import { MetadataEventPublisher } from 'src/engine/subscriptions/metadata-event/metadata-event-publisher';
 import { MetadataEventResolutionService } from 'src/engine/subscriptions/metadata-event/services/metadata-event-resolution.service';
 import { MetadataEventsToDbListener } from 'src/engine/subscriptions/metadata-event/metadata-events-to-db.listener';
+import { CoreObjectEventPublisher } from 'src/engine/subscriptions/core-object-event/core-object-event-publisher';
 import { ObjectRecordEventPublisher } from 'src/engine/subscriptions/object-record-event/object-record-event-publisher';
 import { QueueJobEventListener } from 'src/engine/subscriptions/queue-job-event/queue-job-event.listener';
 import { SubscriptionService } from 'src/engine/subscriptions/subscription.service';
@@ -39,12 +41,14 @@ import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache
     I18nModule,
     ApplicationTranslationCatalogModule,
     RecordShareModule,
+    PermissionsModule,
   ],
   providers: [
     SubscriptionService,
     EventStreamService,
     EventStreamResolver,
     ObjectRecordEventPublisher,
+    CoreObjectEventPublisher,
     MetadataEventPublisher,
     MetadataEventResolutionService,
     MetadataEventEmitter,
@@ -57,6 +61,7 @@ import { WorkspaceCacheModule } from 'src/engine/workspace-cache/workspace-cache
   exports: [
     SubscriptionService,
     ObjectRecordEventPublisher,
+    CoreObjectEventPublisher,
     MetadataEventEmitter,
     WorkspaceEventBroadcaster,
   ],

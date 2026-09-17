@@ -8,6 +8,8 @@ import { In, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
 import { WorkflowEntity } from 'src/engine/core-modules/workflow/entities/workflow.entity';
+import { CoreWorkflowEventService } from 'src/engine/core-modules/workflow/services/core-workflow-event.service';
+import { CoreObjectEventOperation } from 'src/engine/subscriptions/enums/core-object-event-operation.enum';
 import { WorkspaceEntity } from 'src/engine/core-modules/workspace/workspace.entity';
 import { WorkspaceOrmManager } from 'src/engine/twenty-orm/workspace-orm.manager';
 import { InjectWorkspaceScopedRepository } from 'src/engine/twenty-orm/workspace-scoped-repository/inject-workspace-scoped-repository.decorator';
@@ -28,6 +30,7 @@ export class WorkflowCoreSyncService {
     private readonly workspaceRepository: Repository<WorkspaceEntity>,
     private readonly workspaceOrmManager: WorkspaceOrmManager,
     private readonly workspaceCacheService: WorkspaceCacheService,
+    private readonly coreWorkflowEventService: CoreWorkflowEventService,
   ) {}
 
   async upsertToCore(
@@ -107,6 +110,14 @@ export class WorkflowCoreSyncService {
       workspaceId,
       coreWorkflowIdByWorkspaceRecordId,
     );
+
+    this.coreWorkflowEventService.publishWorkflowEvents({
+      workspaceId,
+      events: coreRows.map((coreRow) => ({
+        operation: CoreObjectEventOperation.UPDATED,
+        coreWorkflowId: coreRow.id,
+      })),
+    });
   }
 
   private async resolveCoreVersionIdByWorkspaceVersionId(
@@ -177,6 +188,14 @@ export class WorkflowCoreSyncService {
 
     await this.coreWorkflowRepository.delete(workspaceId, {
       id: In(coreWorkflowIds),
+    });
+
+    this.coreWorkflowEventService.publishWorkflowEvents({
+      workspaceId,
+      events: coreWorkflowIds.map((coreWorkflowId) => ({
+        operation: CoreObjectEventOperation.DELETED,
+        coreWorkflowId,
+      })),
     });
   }
 

@@ -4,6 +4,7 @@ import { isDefined } from 'twenty-shared/utils';
 
 import { EventStreamService } from 'src/engine/subscriptions/event-stream.service';
 import { SubscriptionService } from 'src/engine/subscriptions/subscription.service';
+import { type CoreObjectEvent } from 'src/engine/subscriptions/types/core-object-event.type';
 import { type EventStreamData } from 'src/engine/subscriptions/types/event-stream-data.type';
 import { type EventStreamPayload } from 'src/engine/subscriptions/types/event-stream-payload.type';
 import { type QueueJobEvent } from 'src/engine/subscriptions/types/queue-job-event.type';
@@ -86,11 +87,42 @@ export class WorkspaceEventBroadcaster {
     );
   }
 
+  async broadcastCoreObjectEvents({
+    workspaceId,
+    coreObjectEvents,
+    canDeliverToStream,
+  }: {
+    workspaceId: string;
+    coreObjectEvents: CoreObjectEvent[];
+    canDeliverToStream: (streamData: EventStreamData) => Promise<boolean>;
+  }): Promise<void> {
+    if (coreObjectEvents.length === 0) {
+      return;
+    }
+
+    await this.publishToActiveStreams(workspaceId, async (streamData) => {
+      const isDeliverable = await canDeliverToStream(streamData);
+
+      if (!isDeliverable) {
+        return undefined;
+      }
+
+      return {
+        objectRecordEventsWithQueryIds: [],
+        metadataEvents: [],
+        coreObjectEvents,
+      };
+    });
+  }
+
   private async publishToActiveStreams(
     workspaceId: string,
     buildPayloadForStream: (
       streamData: EventStreamData,
-    ) => EventStreamPayload | undefined,
+    ) =>
+      | EventStreamPayload
+      | undefined
+      | Promise<EventStreamPayload | undefined>,
   ): Promise<void> {
     const activeStreamIds =
       await this.eventStreamService.getActiveStreamIds(workspaceId);
@@ -112,7 +144,7 @@ export class WorkspaceEventBroadcaster {
         continue;
       }
 
-      const payload = buildPayloadForStream(streamData);
+      const payload = await buildPayloadForStream(streamData);
 
       if (!isDefined(payload)) {
         continue;

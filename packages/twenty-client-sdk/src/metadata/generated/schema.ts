@@ -1286,6 +1286,23 @@ export interface JobStatus {
 /** Job state in the queue */
 export type JobState = 'COMPLETED' | 'FAILED' | 'ACTIVE' | 'WAITING' | 'DELAYED' | 'PRIORITIZED' | 'WAITING_CHILDREN'
 
+export interface CoreObjectEvent {
+    entity: CoreObjectEventEntity
+    operation: CoreObjectEventOperation
+    coreWorkflowId: Scalars['UUID']
+    coreWorkflowVersionId?: Scalars['UUID']
+    revision: Scalars['Float']
+    __typename: 'CoreObjectEvent'
+}
+
+
+/** Core Object Event Entity */
+export type CoreObjectEventEntity = 'WORKFLOW' | 'WORKFLOW_VERSION'
+
+
+/** Core Object Event Operation */
+export type CoreObjectEventOperation = 'CREATED' | 'UPDATED' | 'DELETED'
+
 export interface ObjectRecordEventProperties {
     updatedFields?: Scalars['String'][]
     before?: Scalars['JSON']
@@ -1332,6 +1349,7 @@ export interface EventSubscription {
     objectRecordEventsWithQueryIds: ObjectRecordEventWithQueryIds[]
     metadataEvents: MetadataEvent[]
     queueJobEvents: JobStatus[]
+    coreObjectEvents: CoreObjectEvent[]
     __typename: 'EventSubscription'
 }
 
@@ -3185,10 +3203,10 @@ export interface MinimalMetadata {
 }
 
 export interface Query {
-    navigationMenuItems: NavigationMenuItem[]
-    navigationMenuItem?: NavigationMenuItem
     applicationSdkClientChecksums?: SdkClientChecksums
     isApplicationStopped: Scalars['Boolean']
+    navigationMenuItems: NavigationMenuItem[]
+    navigationMenuItem?: NavigationMenuItem
     enterprisePortalSession?: Scalars['String']
     enterpriseCheckoutSession?: Scalars['String']
     enterpriseSubscriptionStatus?: EnterpriseSubscriptionStatusDTO
@@ -4910,6 +4928,16 @@ export interface JobStatusGenqlSelection{
     __scalar?: boolean | number
 }
 
+export interface CoreObjectEventGenqlSelection{
+    entity?: boolean | number
+    operation?: boolean | number
+    coreWorkflowId?: boolean | number
+    coreWorkflowVersionId?: boolean | number
+    revision?: boolean | number
+    __typename?: boolean | number
+    __scalar?: boolean | number
+}
+
 export interface ObjectRecordEventPropertiesGenqlSelection{
     updatedFields?: boolean | number
     before?: boolean | number
@@ -4952,6 +4980,7 @@ export interface EventSubscriptionGenqlSelection{
     objectRecordEventsWithQueryIds?: ObjectRecordEventWithQueryIdsGenqlSelection
     metadataEvents?: MetadataEventGenqlSelection
     queueJobEvents?: JobStatusGenqlSelection
+    coreObjectEvents?: CoreObjectEventGenqlSelection
     __typename?: boolean | number
     __scalar?: boolean | number
 }
@@ -6913,10 +6942,10 @@ export interface MinimalMetadataGenqlSelection{
 }
 
 export interface QueryGenqlSelection{
-    navigationMenuItems?: NavigationMenuItemGenqlSelection
-    navigationMenuItem?: (NavigationMenuItemGenqlSelection & { __args: {id: Scalars['UUID']} })
     applicationSdkClientChecksums?: (SdkClientChecksumsGenqlSelection & { __args: {applicationId: Scalars['UUID']} })
     isApplicationStopped?: { __args: {applicationUniversalIdentifier: Scalars['String']} }
+    navigationMenuItems?: NavigationMenuItemGenqlSelection
+    navigationMenuItem?: (NavigationMenuItemGenqlSelection & { __args: {id: Scalars['UUID']} })
     enterprisePortalSession?: { __args: {returnUrlPath?: (Scalars['String'] | null)} } | boolean | number
     enterpriseCheckoutSession?: { __args: {billingInterval?: (Scalars['String'] | null)} } | boolean | number
     enterpriseSubscriptionStatus?: EnterpriseSubscriptionStatusDTOGenqlSelection
@@ -8580,6 +8609,14 @@ export interface LogicFunctionLogsInput {applicationId?: (Scalars['UUID'] | null
     export const isJobStatus = (obj?: { __typename?: any } | null): obj is JobStatus => {
       if (!obj?.__typename) throw new Error('__typename is missing in "isJobStatus"')
       return JobStatus_possibleTypes.includes(obj.__typename)
+    }
+    
+
+
+    const CoreObjectEvent_possibleTypes: string[] = ['CoreObjectEvent']
+    export const isCoreObjectEvent = (obj?: { __typename?: any } | null): obj is CoreObjectEvent => {
+      if (!obj?.__typename) throw new Error('__typename is missing in "isCoreObjectEvent"')
+      return CoreObjectEvent_possibleTypes.includes(obj.__typename)
     }
     
 
@@ -10695,6 +10732,17 @@ export const enumJobState = {
    DELAYED: 'DELAYED' as const,
    PRIORITIZED: 'PRIORITIZED' as const,
    WAITING_CHILDREN: 'WAITING_CHILDREN' as const
+}
+
+export const enumCoreObjectEventEntity = {
+   WORKFLOW: 'WORKFLOW' as const,
+   WORKFLOW_VERSION: 'WORKFLOW_VERSION' as const
+}
+
+export const enumCoreObjectEventOperation = {
+   CREATED: 'CREATED' as const,
+   UPDATED: 'UPDATED' as const,
+   DELETED: 'DELETED' as const
 }
 
 export const enumMetadataEventAction = {

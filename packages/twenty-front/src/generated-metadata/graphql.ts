@@ -1232,6 +1232,28 @@ export type ConnectionParametersInput = {
   username?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type CoreObjectEvent = {
+  __typename?: 'CoreObjectEvent';
+  coreWorkflowId: Scalars['UUID']['output'];
+  coreWorkflowVersionId?: Maybe<Scalars['UUID']['output']>;
+  entity: CoreObjectEventEntity;
+  operation: CoreObjectEventOperation;
+  revision: Scalars['Float']['output'];
+};
+
+/** Core Object Event Entity */
+export enum CoreObjectEventEntity {
+  WORKFLOW = 'WORKFLOW',
+  WORKFLOW_VERSION = 'WORKFLOW_VERSION'
+}
+
+/** Core Object Event Operation */
+export enum CoreObjectEventOperation {
+  CREATED = 'CREATED',
+  DELETED = 'DELETED',
+  UPDATED = 'UPDATED'
+}
+
 export type CreateAgentInput = {
   description?: InputMaybe<Scalars['String']['input']>;
   evaluationInputs?: InputMaybe<Array<Scalars['String']['input']>>;
@@ -2024,6 +2046,7 @@ export enum EventLogTable {
 
 export type EventSubscription = {
   __typename?: 'EventSubscription';
+  coreObjectEvents: Array<CoreObjectEvent>;
   eventStreamId: Scalars['String']['output'];
   metadataEvents: Array<MetadataEvent>;
   objectRecordEventsWithQueryIds: Array<ObjectRecordEventWithQueryIds>;

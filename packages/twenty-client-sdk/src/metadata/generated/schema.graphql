@@ -1647,6 +1647,27 @@ enum JobState {
   WAITING_CHILDREN
 }
 
+type CoreObjectEvent {
+  entity: CoreObjectEventEntity!
+  operation: CoreObjectEventOperation!
+  coreWorkflowId: UUID!
+  coreWorkflowVersionId: UUID
+  revision: Float!
+}
+
+"""Core Object Event Entity"""
+enum CoreObjectEventEntity {
+  WORKFLOW
+  WORKFLOW_VERSION
+}
+
+"""Core Object Event Operation"""
+enum CoreObjectEventOperation {
+  CREATED
+  UPDATED
+  DELETED
+}
+
 type ObjectRecordEventProperties {
   updatedFields: [String!]
   before: JSON
@@ -1698,6 +1719,7 @@ type EventSubscription {
   objectRecordEventsWithQueryIds: [ObjectRecordEventWithQueryIds!]!
   metadataEvents: [MetadataEvent!]!
   queueJobEvents: [JobStatus!]!
+  coreObjectEvents: [CoreObjectEvent!]!
 }
 
 type UserSession {
@@ -3628,10 +3650,10 @@ type MinimalMetadata {
 }
 
 type Query {
-  navigationMenuItems: [NavigationMenuItem!]!
-  navigationMenuItem(id: UUID!): NavigationMenuItem
   applicationSdkClientChecksums(applicationId: UUID!): SdkClientChecksums
   isApplicationStopped(applicationUniversalIdentifier: String!): Boolean!
+  navigationMenuItems: [NavigationMenuItem!]!
+  navigationMenuItem(id: UUID!): NavigationMenuItem
   enterprisePortalSession(returnUrlPath: String): String
   enterpriseCheckoutSession(billingInterval: String): String
   enterpriseSubscriptionStatus: EnterpriseSubscriptionStatusDTO
