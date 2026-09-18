@@ -21,6 +21,10 @@ Where this repo differs from your defaults:
 
 Longer-form guides remain in `.cursor/rules/` (from the Cursor era).
 
+## Branches
+
+Branches are named `<github-handle>/<short-kebab-summary>`, for example `ijreilly/app-view-groups`. Before the first commit, rename the branch a session was started on to that form and push it; an auto-generated name such as `cl/beautiful-franklin-wez11a` is never the branch to push. Once a pull request is open on a branch, keep that branch.
+
 ## Commands
 
 ```bash
